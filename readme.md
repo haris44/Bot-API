@@ -1,19 +1,19 @@
-![MacDown logo](http://imageshack.com/a/img924/4162/p5NF6P.png)
+
 
 # Thoune Bot Framework
 
-Thoune bot framework est un ensemble de projets réalisés dans le cadre d'un cours de **webservice**
+Thoune bot framework est un ensemble de projets réalisés dans le cadre d'un workshop
 Celui-ci s'articule autour de plusieurs composants, qui seront tous présentés dans ce readme. 
 
-L'objectif était simple : créer un bot capable de répondre directement sur Facebook
+L'objectif était simple : créer un bot capable de répondre directement sur le site de Pole emploi
 
-Cependant, la GrimuTeam à décidé de s'attaquer à un projet de bot hautement modulable, pouvant être étendu très facilement, en utilisant l'unification des messages et en offrant une grande souplesse sur l'API principale.
+Cependant, nous avons décidé de s'attaquer à un projet de bot hautement modulable, pouvant être étendu très facilement, en utilisant l'unification des messages et en offrant une grande souplesse sur l'API principale.
 
 ## Architecture logicielle du projet
 
 Le projet s'articule donc autour de cette API, qui sert en fait de **routeur/gateway** entre chacun des services. D'un côté, les connecteurs vers les réseaux sociaux (**Messenger** dans le cas précis, mais d'autres peuvent être développés facilement), de l'autre coté ce qu'on appellera des **intentions**, qui seront capables de répondre à un certain type de message.
 
-Voici une présentation du flux d'un message dans Thoune
+Voici une présentation du flux d'un message dans Chapeau L'emploi
 
 ![flux](http://imageshack.com/a/img924/4108/BXYYIW.png)
 
@@ -47,25 +47,12 @@ En cas d'intent non reconnu, le message est redirigé vers bot-intent-None
 
 [Bot-intent-None : Permet de répondre quand Thoune ne comprend pas](https://github.com/haris44/bot-intent-none)
 
-[Bot-intent-chucknorris : Funfact de Chucknorris](https://github.com/Netoun/bot-intent-chucknorris)
 
 [Bot-intent-classement : Permet d'obtenir le classement de certaines ligues](https://github.com/Netoun/bot-intent-insulte)
 
 [Bot-intent-insulte : Donne un peu de répartie à Thoune](https://github.com/Netoun/bot-intent-classement)
 
 Il est très simple de créer un intent, basez vous simplement sur le projet bot-intent-None
-
-#### Connecteurs :
-
-Dans le cadre de ce projet, nous n'avons créé qu'un connecteur pour Messenger. Cependant, il est possible d'en ajouter (bien qu'une petite modification devra être apportée à l'API) 
-
-[Connecteur Messenger](https://github.com/clusson/bot-messenger)
-
-#### Frontend :
-
-Également, nous avons créé un petit projet front-end en CycleJS afin de visualiser les messages, et poster les intents
-
-[Frontend](https://github.com/NathanGrimaud/ProjetWebService-Front)
 
 
 #### RabbitMock :
@@ -128,10 +115,8 @@ LUIS_URL=
 
 RABBIT_QUEUE_API_MESSAGE=bot-api-message
 RABBIT_BINDING_API_MESSAGE=bot.api.message
-RABBIT_BINDING_FACEBOOK=bot.facebook
 RABBIT_BINDING_API_USER=bot.api.user
 RABBIT_QUEUE_API_USER=bot-api-user
-RABBIT_QUEUE_FACEBOOK=bot-facebook
 RABBIT_EXCHANGE=bot.topic
 RABBIT_QUEUE_API_INTENT=bot-api-intent
 RABBIT_BINDING_API_INTENT=bot.api.intent
