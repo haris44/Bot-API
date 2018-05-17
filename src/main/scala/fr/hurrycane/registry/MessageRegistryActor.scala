@@ -64,7 +64,11 @@ class MessageRegistryActor extends Actor with ActorLogging with JsonSupport {
           log.info("RECEIVE LUIS RESPONSE :" + parsed.topScoringIntent.intent)
           val channel = RabbitFactory.setupIntentChannel(rabbit, parsed.topScoringIntent)
           val performedMessage = PerformedMessage(message.content, System.currentTimeMillis, parsed.topScoringIntent, message.mood, message.conversationId, parsed.entities)
-          channel ! ChannelMessage((channel) => channel.basicPublish(RabbitFactory.exchange, "bot.intent." + parsed.topScoringIntent.intent, null, performedMessage.toJson.toString().getBytes()), dropIfNoChannel = false)
+          if (request.mood == "sorrowLikelihood" || request.mood == "angerLikelihood") {
+            channel ! ChannelMessage((channel) => channel.basicPublish(RabbitFactory.exchange, "bot.intent.Help", null, performedMessage.toJson.toString().getBytes()), dropIfNoChannel = false)
+          } else {
+            channel ! ChannelMessage((channel) => channel.basicPublish(RabbitFactory.exchange, "bot.intent." + parsed.topScoringIntent.intent, null, performedMessage.toJson.toString().getBytes()), dropIfNoChannel = false)
+          }
           ActionPerformed(message.uuid)
         })
 
