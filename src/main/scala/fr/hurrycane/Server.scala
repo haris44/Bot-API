@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ HttpEntity, HttpMethods, HttpRequest, MediaTypes }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.settings.RoutingSettings
@@ -15,6 +14,9 @@ import fr.hurrycane.entity.PerformedMessage
 import fr.hurrycane.registry.{ ClusterMemberShipRegistry, ConversationRegistryActor, MessageRegistryActor, OfferRegistryActor }
 import fr.hurrycane.routes.{ ClusterRoutes, ConversationRoutes, MessageRoutes, OfferRoutes }
 import fr.hurrycane.tools.RabbitFactory
+import play.api.libs.ws.DefaultBodyReadables._
+import play.api.libs.ws.DefaultBodyWritables._
+import play.api.libs.ws.ahc.StandaloneAhcWSClient
 import spray.json._
 
 import scala.concurrent.duration._
@@ -40,12 +42,13 @@ object Server extends App with ConversationRoutes with MessageRoutes with OfferR
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) {
         val response = RabbitFactory.fromBytes(body).parseJson.convertTo[PerformedMessage]
-        val entity = HttpEntity(MediaTypes.`application/json`, response.toJson.toString())
-        println("RECEIVE RESPONSE")
-        Http(actorSystem).singleRequest(HttpRequest(
-          method = HttpMethods.POST,
-          uri = sys.env("RESPONSE_URL") + "conversation/" + response.conversationId + "/callback",
-          entity = entity))
+        println("RECEIVE RESPONSE" + sys.env("RESPONSE_URL") + "conversation/" + response.conversationId + "/callback")
+        println(response.toJson.toString)
+        StandaloneAhcWSClient()
+          .url(sys.env("RESPONSE_URL") + "conversation/" + response.conversationId + "/callback")
+          .addHttpHeaders("Content-Type" -> "application/json")
+          .post(response.toJson.toString)
+
       }
     }
     channel.basicConsume(RabbitFactory.messageQueue, true, consumer)
