@@ -12,14 +12,14 @@ import akka.stream.ActorMaterializer
 import com.newmotion.akka.rabbitmq._
 import fr.hurrycane.db.DatabaseCreator
 import fr.hurrycane.entity.PerformedMessage
-import fr.hurrycane.registry.{ ConversationRegistryActor, MessageRegistryActor, OfferRegistryActor }
-import fr.hurrycane.routes.{ ConversationRoutes, MessageRoutes, OfferRoutes }
+import fr.hurrycane.registry.{ ClusterMemberShipRegistry, ConversationRegistryActor, MessageRegistryActor, OfferRegistryActor }
+import fr.hurrycane.routes.{ ClusterRoutes, ConversationRoutes, MessageRoutes, OfferRoutes }
 import fr.hurrycane.tools.RabbitFactory
 import spray.json._
 
 import scala.concurrent.duration._
 
-object Server extends App with ConversationRoutes with MessageRoutes with OfferRoutes {
+object Server extends App with ConversationRoutes with MessageRoutes with OfferRoutes with ClusterRoutes {
 
   DatabaseCreator.checkAll()
 
@@ -41,6 +41,7 @@ object Server extends App with ConversationRoutes with MessageRoutes with OfferR
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) {
         val response = RabbitFactory.fromBytes(body).parseJson.convertTo[PerformedMessage]
         val entity = HttpEntity(MediaTypes.`application/json`, response.toJson.toString())
+        println("RECEIVE RESPONSE")
         Http(actorSystem).singleRequest(HttpRequest(
           method = HttpMethods.POST,
           uri = sys.env("RESPONSE_URL") + "conversation/" + response.conversationId + "/callback",
@@ -57,12 +58,14 @@ object Server extends App with ConversationRoutes with MessageRoutes with OfferR
   val conversationRegistryActor: ActorRef = actorSystem.actorOf(ConversationRegistryActor.props, "userRegistryActor")
   val messageRegistryActor: ActorRef = actorSystem.actorOf(MessageRegistryActor.props, "messageRegistryActor")
   val offerRegistryActor: ActorRef = actorSystem.actorOf(OfferRegistryActor.props, "offerRegistryActor")
+  val clusterMemberShipRegistryActor: ActorRef = actorSystem.actorOf(ClusterMemberShipRegistry.props, "clusterRegistryActor")
 
   val offerRoute: Route = offerRoutes(offerRegistryActor, clusterMembershipAskTimeout)
   val conversationRoute: Route = conversationRoutes(conversationRegistryActor, clusterMembershipAskTimeout)
   val messageRoute: Route = messageRoutes(messageRegistryActor, clusterMembershipAskTimeout)
+  val membersRoute: Route = clusterRoutes(clusterMemberShipRegistryActor, clusterMembershipAskTimeout)
 
-  lazy val routes: Route = conversationRoute ~ messageRoute ~ offerRoute
+  lazy val routes: Route = conversationRoute ~ messageRoute ~ offerRoute ~ membersRoute
 
   http.bindAndHandle(routes, sys.env("HTTP_HOST"), sys.env("HTTP_PORT").toInt)
 

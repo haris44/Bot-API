@@ -11,6 +11,7 @@ import akka.http.scaladsl.settings.RoutingSettings
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
+import fr.hurrycane.dto.RequestDto
 import fr.hurrycane.entity.ActionPerformed
 import fr.hurrycane.registry.MessageRegistryActor._
 import fr.hurrycane.registry.{ Message, Messages }
@@ -35,10 +36,12 @@ trait MessageRoutes extends JsonSupport {
               complete(messages)
             },
             post {
-              entity(as[Message]) { message =>
+              entity(as[RequestDto]) { message =>
+                println("RECEIVE POST REQUEST")
                 val userCreated: Future[Future[ActionPerformed]] =
                   (messageRegistryActor ? SendMessage(message)).mapTo[Future[ActionPerformed]]
                 onSuccess(userCreated) { performed =>
+                  println("COMPLETE REQUEST")
                   complete((StatusCodes.Created, performed))
                 }
               }

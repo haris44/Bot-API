@@ -35,6 +35,7 @@ lazy val root = (project in file(".")).
       "com.typesafe.akka" %% "akka-http-xml"        % akkaHttpVersion,
       "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
       "com.typesafe.akka" %% "akka-stream"          % akkaVersion,
+      "com.typesafe.play" %% "play-ahc-ws-standalone" % "2.0.0-M1",
       "com.newmotion" %% "akka-rabbitmq" % "5.0.0",
       "com.sksamuel.elastic4s" %% "elastic4s-spray-json" % "6.2.8",
       "com.sksamuel.elastic4s" %% "elastic4s-http-streams" % elastic4sVersion,
