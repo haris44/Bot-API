@@ -38,7 +38,7 @@ trait ConversationRoutes extends JsonSupport {
               val userCreated: Future[ActionPerformed] =
                 (conversationRegistryActor ? CreateConversation).mapTo[ActionPerformed]
               onSuccess(userCreated) { performed =>
-                complete((StatusCodes.Created, performed))
+                complete((StatusCodes.Created, performed.description))
 
               }
             })

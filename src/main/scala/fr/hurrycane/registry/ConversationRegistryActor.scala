@@ -14,7 +14,7 @@ final case class Conversations(users: Seq[Conversation])
 
 object ConversationRegistryActor {
   final case object GetConversation
-  final case class CreateConversation()
+  final case object CreateConversation
   final case class GetConversations(name: String)
 
   def props: Props = Props[ConversationRegistryActor]
@@ -37,7 +37,7 @@ class ConversationRegistryActor extends Actor with ActorLogging with JsonSupport
         case Right(results) => Conversations(results.result.hits.hits.map(el => el.to[Conversation]).toSeq)
       })
 
-    case CreateConversation() =>
+    case CreateConversation =>
       val conversation = Conversation(randomUUID().toString)
       elastic.execute {
         indexInto("bot-conversation" / "conversation").doc[Conversation](conversation).refresh(RefreshPolicy.IMMEDIATE)

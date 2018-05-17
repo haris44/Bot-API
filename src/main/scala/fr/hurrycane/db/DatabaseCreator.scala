@@ -14,7 +14,7 @@ object DatabaseCreator {
     elastic.execute {
       searchWithType("bot-user" / "user")
     }.map({
-      case Left(failure) => createUserIndex()
+      case Left(failure) => createConversationIndex()
       case Right(results) => results
     }).await
 
@@ -34,15 +34,13 @@ object DatabaseCreator {
 
   }
 
-  def createUserIndex() = {
+  def createConversationIndex() = {
     elastic.execute {
-      createIndex("bot-user").mappings(
-        mapping("user") as (
-          textField("nom"),
-          textField("prenom"),
-          textField("userid")))
+      createIndex("bot-conversation").mappings(
+        mapping("conversation") as
+          textField("conversationId"))
     }.map({
-      case Left(failure) => throw new Exception("Cannot populate user ")
+      case Left(failure) => throw new Exception("Cannot populate conversation ")
       case Right(results) => results
     })
   }
@@ -51,11 +49,12 @@ object DatabaseCreator {
     elastic.execute {
       createIndex("bot-message").mappings(
         mapping("message") as (
-          textField("nom"),
-          textField("prenom"),
-          textField("userid")))
+          textField("uuid"),
+          textField("content"),
+          textField("mood"),
+          textField("conversationId")))
     }.map({
-      case Left(failure) => throw new Exception("Cannot populate user ")
+      case Left(failure) => throw new Exception("Cannot populate message ")
       case Right(results) => results
     })
 
